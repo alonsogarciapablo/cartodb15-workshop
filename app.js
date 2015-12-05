@@ -2,6 +2,10 @@
 //  - Add title to the dashboard
 //  - Customize infowindow
 //  - Add widget that gets some data from SQL API and filters by category
+// cartodb.SQL({ user: 'cartodb15' }).execute('SELECT AVG(price) AS price FROM airbnb_listings ' + ' WHERE ' + conditions.join(' AND '))
+// .done(function(data){
+//   alert(data.rows[0].price);
+// });
 
 var main = function() {
   var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/66bffecc-99e2-11e5-82c2-0ecd1babdde5/viz.json';
@@ -19,7 +23,7 @@ var main = function() {
 var onVisCreated = function(vis, layers) {
   var editorLayers = layers[1];
   var airbnbListings = editorLayers.getSubLayer(3);
-  var filters = document.querySelectorAll('.js-filter'), i;
+  var filters = document.querySelectorAll('.js-filter');
 
   for (i = 0; i < filters.length; ++i) {
     filters[i].addEventListener('click', function(event) {
@@ -36,13 +40,15 @@ var onFilterClicked = function(filter, sublayer) {
 
 var applyFilter = function(filter) {
   var widget = filter.closest('.js-widget');
+  var isFilterActive = filter.dataset.active === "true";
 
   var filters = widget.querySelectorAll('.js-filter');
   for (i = 0; i < filters.length; ++i) {
     filters[i].dataset.active = "false";
     filters[i].classList.remove('is-active');
   }
-  if (filter.dataset.queryCondition) {
+
+  if (!isFilterActive && filter.dataset.queryCondition) {
     filter.dataset.active = "true";
     filter.classList.add('is-active');
   }

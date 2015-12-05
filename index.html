@@ -15,6 +15,20 @@
     <div id="map"></div>
 
     <div id="widgets">
+
+      <div class="widget js-widget">
+        <a class="widget-filter-clear js-filter" href="#">Clear</a>
+        <h1 class="widget-title">Room type</h1>
+        <ul class="widget-filters">
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="room_type = 'Entire home/apt'" data-active="false" href="#">Entire homes or apartments</a>
+          </li>
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="room_type != 'Entire home/apt'" data-active="false" href="#">Other types</a>
+          </li>
+        </ul>
+      </div>
+
       <div class="widget js-widget">
         <a class="widget-filter-clear js-filter" href="#">Clear</a>
         <h1 class="widget-title">Distance to subway station</h1>
@@ -47,7 +61,6 @@
           <li>
             <a class="widget-filter js-filter" data-query-condition="price > 200"  data-active="false" href="#">More than $200</a>
           </li>
-
         </ul>
       </div>
     </div>
