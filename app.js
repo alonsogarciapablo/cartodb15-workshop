@@ -79,6 +79,8 @@ var main = function() {
   .done(onVisCreated)
   .error(onError);
 
+};
+
 var renderWidget = function(widgetData) {
   var template = document.getElementById('widgetTemplate').innerHTML;
   var template = _.template(template);
