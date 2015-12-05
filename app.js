@@ -8,6 +8,65 @@
 // });
 //  - Widget to filter by line name
 var main = function() {
+  var widgets = [
+    {
+      title: 'Room type',
+      filters: [
+        { 
+          title: 'Entire homes or apartments',
+          condition: "room_type = 'Entire home/apt'"
+        },
+        {
+          title: 'Other types',
+          condition: "room_type != 'Entire home/apt'"
+        }
+      ]
+    }, 
+    {
+      title: 'Distance to subway station',
+      filters: [
+        {
+          title: "Less than 200 yards",
+          condition: "distance_to_closest_subway_station <= 0.11"
+        },
+        {
+          title: "Less than a 1/4 mile",
+          condition: "distance_to_closest_subway_station <= 0.25"
+        },
+        {
+          title: "Less than 0.5 miles",
+          condition: "distance_to_closest_subway_station <= 0.5"
+        },
+        {
+          title: "Less than 1 mile",
+          condition: "distance_to_closest_subway_station <= 1"
+        }
+      ]
+    }, {
+      title: 'Price range',
+      filters: [
+        {
+          title: "Between $50 and $100",
+          condition: "price BETWEEN 50 and 100"
+        },
+        {
+          title: "Between $100 and $150",
+          condition: "price BETWEEN 100 and 150"
+        },
+        {
+          title: "Between $150 and $200",
+          condition: "price BETWEEN 150 and 200"
+        },
+        {
+          title: "More than $200",
+          condition: "price > 200"
+        }
+      ]
+    }
+  ]
+
+  widgets.forEach(renderWidget);
+
   var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/66bffecc-99e2-11e5-82c2-0ecd1babdde5/viz.json';
   var options = {
     shareable: false,
@@ -19,6 +78,11 @@ var main = function() {
   cartodb.createVis('map', vizjson, options)
   .done(onVisCreated)
   .error(onError);
+
+var renderWidget = function(widgetData) {
+  var template = document.getElementById('widgetTemplate').innerHTML;
+  var template = _.template(template);
+  document.getElementById('widgets').innerHTML += template(widgetData);
 };
 
 var onVisCreated = function(vis, layers) {
@@ -58,6 +122,7 @@ var applyFilter = function(widget, filter) {
       filters[i].dataset.active = "false";
     }
   }
+
   if (!isFilterActive && filter.dataset.queryCondition) {
     filter.dataset.active = "true";
   }
@@ -88,7 +153,7 @@ var updateSublayerSQL = function(sublayer, activeFilters) {
     var newQuery = originalSQL;
   }
   sublayer.setSQL(newQuery);
-}
+};
 
 var onError = function(err) {
   alert('error!');
