@@ -88,7 +88,7 @@ var renderWidget = function(widgetData) {
 };
 
 var onVisCreated = function(vis, layers) {
-  var sublayer = layers[1].getSubLayer(3);
+  var sublayer = layers[1].getSubLayer(0);
   var activeFilters = [];
   var widgets = document.querySelectorAll('.js-widget');
   for (i = 0; i < widgets.length; i++) {
