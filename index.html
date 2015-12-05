@@ -1,3 +1,4 @@
+<!-- CARTODB15 - Source code available at: http://alonsogarciapablo.github.io/cartodb15-workshop/ -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -12,25 +13,43 @@
   </head>
   <body>
     <div id="map"></div>
-    <script>
-      window.onload = function main() {
-        var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/66bffecc-99e2-11e5-82c2-0ecd1babdde5/viz.json';
-        cartodb.createVis('map', vizjson, {
-          shareable: true,
-          title: false,
-          description: false,
-          search: true,
-          tiles_loader: true
-        })
-        .done(function(vis, layers) {
-          
-          var editorLayers = layers[1];
-          debugger;
-        })
-        .error(function(err) {
-          alert('error!');
-        });
-      }
-    </script>
+
+    <div id="widgets">
+      <div class="widget js-widget">
+        <a class="widget-filter-clear js-filter" href="#">Clear</a>
+        <h1 class="widget-title">Distance to subway station</h1>
+        <ul class="widget-filters">
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="distance_to_closest_subway_station <= 0.25" data-active="false" href="#">Less than a 1/4 mile</a>
+          </li>
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="distance_to_closest_subway_station <= 0.5" data-active="false" href="#">Less than 0.5 miles</a>
+          </li>
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="distance_to_closest_subway_station <= 1" data-active="false" href="#">Less than 1 mile</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="widget js-widget">
+        <a class="widget-filter-clear js-filter" href="#">Clear</a>
+        <h1 class="widget-title">Price range</h1>
+        <ul class="widget-filters">
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="price BETWEEN 50 and 100"  data-active="false" href="#">Between $50 and $100</a>
+          </li>
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="price BETWEEN 100 and 150"  data-active="false" href="#">Between $100 and $150</a>
+          </li>
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="price BETWEEN 150 and 200"  data-active="false" href="#">Between $150 and $200</a>
+          </li>
+          <li>
+            <a class="widget-filter js-filter" data-query-condition="price > 200"  data-active="false" href="#">More than $200</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
   </body>
 </html>
