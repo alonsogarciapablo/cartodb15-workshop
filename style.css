@@ -62,7 +62,8 @@ a {
   margin-right: 10px;
 }
 
-.widget-filter.is-active:before {
+.widget-filter.is-active:before,
+.widget-filter:hover:before {
   background: green;
 }
 
