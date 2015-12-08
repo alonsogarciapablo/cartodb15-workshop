@@ -29,10 +29,20 @@
       </div>
     </script>
 
+    <script type="text/javascript" src="./widgets.js"></script>
     <script type="text/javascript" src="./app.js"></script>
   </head>
   <body>
     <div id="map"></div>
-    <div id="widgets"></div>
+    <div id="widgets">
+      <div class="widget" id="statsWidget">
+        <h1 class="widget-title">Stats</h1>
+        <div>
+          AVG: $<span class="js-stat-avg">0</span>
+          MIN: $<span class="js-stat-min">0</span>
+          MAX: $<span class="js-stat-max">0</span>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
