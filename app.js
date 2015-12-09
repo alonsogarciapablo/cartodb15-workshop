@@ -37,14 +37,6 @@ var widgets = [
       {
         title: "6 blocks",
         condition: "distance_to_closest_subway_station <= 0.3"
-      },
-      {
-        title: "10 blocks",
-        condition: "distance_to_closest_subway_station <= 0.5"
-      },
-      {
-        title: "20 blocks",
-        condition: "distance_to_closest_subway_station <= 1"
       }
     ]
   }, {
@@ -55,16 +47,8 @@ var widgets = [
         condition: "price < 1000"
       },
       {
-        title: "$1000 to $2500",
-        condition: "price BETWEEN 1000 and 2500"
-      },
-      {
-        title: "$2500 to $5000",
-        condition: "price BETWEEN 2500 and 5000"
-      },
-      {
-        title: "Over $5000",
-        condition: "price > 5000"
+        title: "Over $1000",
+        condition: "price > 1000"
       }
     ]
   }
@@ -119,6 +103,7 @@ var bindClickEvents = function(widget, filter, sublayer) {
     applyFilter(widget, filter);
     reloadWidget(widget);
     updateSublayerSQL(sublayer);
+    updateSublayerCartoCSS(sublayer);
     reloadStats();
   }, false);
 };
@@ -135,6 +120,34 @@ var updateSublayerSQL = function(sublayer) {
   sublayer.setSQL(newQuery);
 };
 
+var updateSublayerCartoCSS = function(sublayer) {
+  var conditions = getFilterConditions();
+
+  var markerWidth = "4";
+  var markerFill = "#B7B7B7";
+  var markerZoom = "";
+
+  if (conditions.length) {
+    markerWidth = "6";
+    markerFill = "#006983";
+    markerZoom = "   [zoom>=13]{marker-width:7;}";
+  }
+  var cartoCSS =  "#airbnb_listings {" +
+                  "   marker-fill-opacity: 0.9;" +
+                  "   marker-line-color: #FFF;" +
+                  "   marker-line-width: 0.5;" +
+                  "   marker-line-opacity: 0.6;" +
+                  "   marker-placement: point;" +
+                  "   marker-type: ellipse;" +
+                  "   marker-width: " + markerWidth + ";" +
+                  "   marker-allow-overlap: true;" +
+                  "   marker-fill: " + markerFill + ";" +
+                  markerZoom +
+                  "}";
+
+  sublayer.setCartoCSS(cartoCSS);
+};
+
 var getFilterConditions = function() {
   var activeFilters = document.querySelectorAll('.js-filter[data-active="true"]');
   var conditions = [];
@@ -146,7 +159,7 @@ var getFilterConditions = function() {
 };
 
 var reloadStats = function() {
-  var statsQuery = "SELECT ROUND(AVG(price), 2) AS avg, MAX(price) AS max, MIN(price) AS min FROM airbnb_listings";
+  var statsQuery = "SELECT COUNT(price) AS count, ROUND(AVG(price), 2) AS avg, MAX(price) AS max, MIN(price) AS min FROM airbnb_listings";
 
   // Add conditions for the active filters
   var conditions = getFilterConditions();
@@ -159,6 +172,7 @@ var reloadStats = function() {
     var row = data.rows[0];
 
     renderStats({
+      count: row.count,
       avg: row.avg,
       max: row.max,
       min: row.min
@@ -169,6 +183,7 @@ var reloadStats = function() {
 var renderStats = function(stats) {
   var statsWidget = document.getElementById('statsWidget');
 
+  statsWidget.querySelector('.js-stat-count').innerHTML = stats.count;
   statsWidget.querySelector('.js-stat-avg').innerHTML = stats.avg;
   statsWidget.querySelector('.js-stat-min').innerHTML = stats.min;
   statsWidget.querySelector('.js-stat-max').innerHTML = stats.max;
