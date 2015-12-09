@@ -1,5 +1,5 @@
 var main = function(vis, layers) {
-  var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/66bffecc-99e2-11e5-82c2-0ecd1babdde5/viz.json';
+  var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/7c6062ac-9d30-11e5-ab1e-0e3ff518bd15/viz.json';
   var options = {
     shareable: false,
     title: false,
@@ -21,11 +21,49 @@ var onVisCreated = function(vis, layers) {
   var widgets = new Widgets();
 
   addWidget(widgets, {
-    title: 'My widget',
-    filters: [{
-      title: 'wadus',
-      condition: 'price < 100'
-    }]
+    title: 'Room type',
+    filters: [
+      {
+        title: 'Entire homes or apartments',
+        condition: "room_type = 'Entire home/apt'"
+      },
+      {
+        title: 'Shared room',
+        condition: "room_type = 'Shared room'"
+      },
+      {
+        title: 'Private room',
+        condition: "room_type = 'Private room'"
+      }
+    ]
+  });
+
+  addWidget(widgets, {
+    title: 'Distance to subway station',
+    filters: [
+      {
+        title: "2 blocks",
+        condition: "distance_to_closest_subway_station <= 0.11"
+      },
+      {
+        title: "6 blocks",
+        condition: "distance_to_closest_subway_station <= 0.3"
+      }
+    ]
+  });
+
+  addWidget(widgets, {
+    title: 'Price range',
+    filters: [
+      {
+        title: "Under $1000",
+        condition: "price < 1000"
+      },
+      {
+        title: "Over $1000",
+        condition: "price > 1000"
+      }
+    ]
   });
 
   var stats = addStats();
