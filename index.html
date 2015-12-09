@@ -12,7 +12,7 @@
 
     <script id="widgetTemplate" type="text/template">
       <div class="widget js-widget">
-        <a class="widget-filter-clear js-filter" href="#">Clear</a>
+        <a class="widget-filter-clear js-filter-clear" href="#">Clear</a>
         <h1 class="widget-title"><%= title %></h1>
         <ul class="widget-filters">
           <%
@@ -29,10 +29,25 @@
       </div>
     </script>
 
+    <script id="statsTemplate" type="text/template">
+      <div class="widget" id="statsTemplate">
+        <h1 class="widget-title">Stats</h1>
+        <div>
+          COUNT: <span><%= count %></span>
+          AVG: $<span><%= avg %></span>
+          MIN: $<span><%= min %></span>
+          MAX: $<span><%= max %></span>
+        </div>
+      </div>
+    </script>
+
+    <script type="text/javascript" src="./widgets.js"></script>
+    <script type="text/javascript" src="./stats.js"></script>
     <script type="text/javascript" src="./app.js"></script>
   </head>
   <body>
     <div id="map"></div>
-    <div id="widgets"></div>
+    <div id="widgets">
+    </div>
   </body>
 </html>

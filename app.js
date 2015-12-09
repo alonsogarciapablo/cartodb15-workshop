@@ -1,165 +1,149 @@
-// TODO:
-//  - Add title to the dashboard
-//  - Customize infowindow
-//  - Add widget that gets some data from SQL API and filters by category
-// cartodb.SQL({ user: 'cartodb15' }).execute('SELECT AVG(price) AS price FROM airbnb_listings ' + ' WHERE ' + conditions.join(' AND '))
-// .done(function(data){
-//   alert(data.rows[0].price);
-// });
-//  - Widget to filter by line name
-var main = function() {
-  var widgets = [
-    {
-      title: 'Room type',
-      filters: [
-        { 
-          title: 'Entire homes or apartments',
-          condition: "room_type = 'Entire home/apt'"
-        },
-        {
-          title: 'Other types',
-          condition: "room_type != 'Entire home/apt'"
-        }
-      ]
-    }, 
-    {
-      title: 'Distance to subway station',
-      filters: [
-        {
-          title: "Less than 200 yards",
-          condition: "distance_to_closest_subway_station <= 0.11"
-        },
-        {
-          title: "Less than a 1/4 mile",
-          condition: "distance_to_closest_subway_station <= 0.25"
-        },
-        {
-          title: "Less than 0.5 miles",
-          condition: "distance_to_closest_subway_station <= 0.5"
-        },
-        {
-          title: "Less than 1 mile",
-          condition: "distance_to_closest_subway_station <= 1"
-        }
-      ]
-    }, {
-      title: 'Price range',
-      filters: [
-        {
-          title: "Between $50 and $100",
-          condition: "price BETWEEN 50 and 100"
-        },
-        {
-          title: "Between $100 and $150",
-          condition: "price BETWEEN 100 and 150"
-        },
-        {
-          title: "Between $150 and $200",
-          condition: "price BETWEEN 150 and 200"
-        },
-        {
-          title: "More than $200",
-          condition: "price > 200"
-        }
-      ]
-    }
-  ]
-
-  widgets.forEach(renderWidget);
-
-  var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/66bffecc-99e2-11e5-82c2-0ecd1babdde5/viz.json';
+var main = function(vis, layers) {
+  var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/7c6062ac-9d30-11e5-ab1e-0e3ff518bd15/viz.json';
   var options = {
     shareable: false,
     title: false,
     description: false,
     search: false,
     tiles_loader: true
+    
   };
   cartodb.createVis('map', vizjson, options)
   .done(onVisCreated)
-  .error(onError);
-
-};
-
-var renderWidget = function(widgetData) {
-  var template = document.getElementById('widgetTemplate').innerHTML;
-  var template = _.template(template);
-  document.getElementById('widgets').innerHTML += template(widgetData);
+  .error(function(err) { alert('error!'); });
 };
 
 var onVisCreated = function(vis, layers) {
-  var sublayer = layers[1].getSubLayer(1);
+  var sublayer = layers[1].getSubLayer(0);
 
-  var activeFilters = [];
-  var widgets = document.querySelectorAll('.js-widget');
-  for (i = 0; i < widgets.length; i++) {
-    widget = widgets[i];
+  var originalSQL = sublayer.getSQL();
+  var originalCartoCSS = sublayer.getCartoCSS();
+  var widgets = new Widgets();
 
-    var filters = widget.querySelectorAll('.js-filter');
-    for (j = 0; j < filters.length; j++) {
-      filter = filters[j];
+  addWidget(widgets, {
+    title: 'Room type',
+    filters: [
+      {
+        title: 'Entire homes or apartments',
+        condition: "room_type = 'Entire home/apt'"
+      },
+      {
+        title: 'Shared room',
+        condition: "room_type = 'Shared room'"
+      },
+      {
+        title: 'Private room',
+        condition: "room_type = 'Private room'"
+      }
+    ]
+  });
 
-      bindClickEvents(widget, filter, sublayer);
-    }
-  }
+  addWidget(widgets, {
+    title: 'Distance to subway station',
+    filters: [
+      {
+        title: "2 blocks",
+        condition: "distance_to_closest_subway_station <= 0.11"
+      },
+      {
+        title: "6 blocks",
+        condition: "distance_to_closest_subway_station <= 0.3"
+      }
+    ]
+  });
+
+  addWidget(widgets, {
+    title: 'Price range',
+    filters: [
+      {
+        title: "Under $1000",
+        condition: "price < 1000"
+      },
+      {
+        title: "Over $1000",
+        condition: "price > 1000"
+      }
+    ]
+  });
+
+  var stats = addStats();
+  loadStats(stats, widgets);
+
+  widgets.each(function(widget) {
+    widget.bind('change:activeFilter', function() {
+
+      var sql = generateSQL(originalSQL, widgets);
+      var cartoCSS = generateCartoCSS(originalCartoCSS, widgets);
+
+      sublayer.set({
+        sql: sql,
+        cartocss: cartoCSS
+      });
+
+      loadStats(stats, widgets);
+    });
+  });
+
+  renderStats(stats);
+  renderWidgets(widgets);
 };
 
-var bindClickEvents = function(widget, filter, sublayer) {
-  filter.addEventListener('click', function(event) {
-    event.preventDefault();
-    applyFilter(widget, filter);
-    reloadWidget(widget);
+var loadStats = function(stats, widgets) {
+  var statsQuery = "SELECT COUNT(price) AS count, ROUND(AVG(price), 2) AS avg, MAX(price) AS max, MIN(price) AS min FROM airbnb_listings";
 
-    // TODO: Keep track of active filters somewhere
-    var activeFilters = document.querySelectorAll('.js-filter[data-active="true"]');
-    updateSublayerSQL(sublayer, activeFilters);
-  }, false);
+  var filterConditions = widgets.getActiveFilterConditions();
+  if (filterConditions.length) {
+    statsQuery += " WHERE " + filterConditions.join(" AND ");
+  }
+
+  console.log("Stats query: ", statsQuery);
+
+  cartodb.SQL({ user: 'cartodb15'}).execute(statsQuery, function(data) {
+    var row = data.rows[0];
+    stats.set({
+      count: row.count,
+      min: row.min,
+      max: row.max,
+      avg: row.avg
+    });
+  });
 };
 
-var applyFilter = function(widget, filter) {
-  var isFilterActive = filter.dataset.active === "true";
+var generateSQL = function(originalSQL, widgets) {
+  var sql = originalSQL;
+  var filterConditions = widgets.getActiveFilterConditions();
 
-  var filters = widget.querySelectorAll('.js-filter');
-  for (i = 0; i < filters.length; i++) {
-    if (filters[i].dataset.queryCondition) {
-      filters[i].dataset.active = "false";
-    }
+  if (filterConditions.length) {
+    sql += " WHERE " + filterConditions.join(" AND ");
   }
 
-  if (!isFilterActive && filter.dataset.queryCondition) {
-    filter.dataset.active = "true";
-  }
+  console.log("SQL: ", sql);
+
+  return sql;
 };
 
-var reloadWidget = function(widget) {
-  var filters = widget.querySelectorAll('.js-filter');
-  for (i = 0; i < filters.length; i++) {
-    var filter = filters[i];
-    if (filter.dataset.active === "true") {
-      filter.classList.add('is-active');
-    } else {
-      filter.classList.remove('is-active');
-    }
-  }
-};
+var generateCartoCSS = function(originalCartoCSS, widgets) {
+  var cartoCSS = originalCartoCSS;
+  var filterConditions = widgets.getActiveFilterConditions();
 
-var updateSublayerSQL = function(sublayer, activeFilters) {
-  var originalSQL = 'SELECT * FROM airbnb_listings';
-  var conditions = [];
-
-  for (i = 0; i < activeFilters.length; i++) {
-    conditions.push(activeFilters[i].dataset.queryCondition);
+  if (filterConditions.length) {
+    cartoCSS =  "#airbnb_listings {" +
+                "   marker-fill-opacity: 0.9;" +
+                "   marker-line-color: #FFF;" +
+                "   marker-line-width: 0.5;" +
+                "   marker-line-opacity: 0.6;" +
+                "   marker-placement: point;" +
+                "   marker-type: ellipse;" +
+                "   marker-width: 6;" +
+                "   marker-allow-overlap: true;" +
+                "   marker-fill: #006983;" +
+                "   [zoom>=13]{marker-width:7;} " +
+                "}";
   }
-  if (conditions.length) {
-    var newQuery = originalSQL + ' WHERE ' + conditions.join(' AND ');
-  } else {
-    var newQuery = originalSQL;
-  }
-  sublayer.setSQL(newQuery);
-};
 
-var onError = function(err) {
-  alert('error!');
+  console.log("CartoCSS: ", cartoCSS);
+
+  return cartoCSS;
 };
 
 window.onload = main;
