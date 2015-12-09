@@ -5,7 +5,6 @@ var Widget = Backbone.Model.extend({
   },
 
   getActiveFilterCondition: function() {
-    debugger;
     var activeFilter = this.get('activeFilter');
     if (activeFilter >= 0) {
       return this.get('filters')[activeFilter].condition;
