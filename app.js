@@ -36,6 +36,7 @@ var onVisCreated = function(vis, layers) {
 
       var filterConditions = widgets.getActiveFilterConditions();
       var sql = "SELECT * FROM airbnb_listings";
+
       if (filterConditions.length) {
         sql += " WHERE " + filterConditions.join(" AND ");
       }
@@ -61,9 +62,15 @@ var onVisCreated = function(vis, layers) {
 
       sublayer.set({
         sql: sql,
-        cartoCSS: cartoCSS
+        cartocss: cartoCSS
       });
     });
   });
-}
+
+  var stats = addStats();
+
+  renderStats(stats);
+  renderWidgets(widgets);
+};
+
 window.onload = main;

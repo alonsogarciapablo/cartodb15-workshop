@@ -29,21 +29,25 @@
       </div>
     </script>
 
+    <script id="statsTemplate" type="text/template">
+      <div class="widget" id="statsTemplate">
+        <h1 class="widget-title">Stats</h1>
+        <div>
+          COUNT: <span><%= count %></span>
+          AVG: $<span><%= avg %></span>
+          MIN: $<span><%= min %></span>
+          MAX: $<span><%= max %></span>
+        </div>
+      </div>
+    </script>
+
     <script type="text/javascript" src="./widgets.js"></script>
+    <script type="text/javascript" src="./stats.js"></script>
     <script type="text/javascript" src="./app.js"></script>
   </head>
   <body>
     <div id="map"></div>
     <div id="widgets">
-      <div class="widget" id="statsWidget">
-        <h1 class="widget-title">Stats</h1>
-        <div>
-          COUNT: <span class="js-stat-count">0</span>
-          AVG: $<span class="js-stat-avg">0</span>
-          MIN: $<span class="js-stat-min">0</span>
-          MAX: $<span class="js-stat-max">0</span>
-        </div>
-      </div>
     </div>
   </body>
 </html>

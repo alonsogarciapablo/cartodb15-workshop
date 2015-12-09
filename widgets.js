@@ -13,19 +13,22 @@ var Widget = Backbone.Model.extend({
 });
 
 var Widgets = Backbone.Collection.extend({
+
   model: Widget,
 
   getActiveFilterConditions: function() {
     var conditions = [];
     this.each(function(widget) {
-      conditions.push(widget.getActiveFilterCondition());
+      var filter = widget.getActiveFilterCondition();
+      if (filter) {
+        conditions.push(filter);
+      }
     });
     return conditions;
   }
 });
 
 var WidgetView = Backbone.View.extend({
-  className: '.js-widget',
 
   events: {
     'click .js-filter': 'changeActiveFilter',
@@ -37,8 +40,7 @@ var WidgetView = Backbone.View.extend({
   },
 
   render: function() {
-    var template = document.getElementById('widgetTemplate').innerHTML;
-    var template = _.template(template);
+    var template = _.template(document.getElementById('widgetTemplate').innerHTML);
     this.el.innerHTML = template(this.model.toJSON());
 
     var filterElements = Array.prototype.slice.call(this.el.querySelectorAll('.js-filter'));
@@ -72,8 +74,12 @@ var WidgetView = Backbone.View.extend({
 var addWidget = function(widgets, widgetData) {
   var widget = new Widget(widgetData);
   widgets.add(widget);
-  widgetView = new WidgetView({ model: widget });
-  document.getElementById('widgets').appendChild(widgetView.render().el);
-
   return widget;
+};
+
+var renderWidgets = function(widgets) {
+  widgets.each(function(widget) {
+    var widgetView = new WidgetView({ model: widget });
+    document.getElementById('widgets').appendChild(widgetView.render().el);
+  });
 };
