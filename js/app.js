@@ -1,6 +1,3 @@
-/**
- * Entry point to the app
- */
 var main = function(vis, layers) {
   var vizjson = 'https://cartodb15.cartodb.com/api/v2/viz/7c6062ac-9d30-11e5-ab1e-0e3ff518bd15/viz.json';
   var options = {
@@ -11,27 +8,18 @@ var main = function(vis, layers) {
     tiles_loader: true
     
   };
-
-  // Creates the visualization
   cartodb.createVis('map', vizjson, options)
   .done(onVisCreated)
   .error(function(err) { alert('error!'); });
 };
 
 var onVisCreated = function(vis, layers) {
-
-  // Get the sublayer that is linked to the airbnb_listings
   var sublayer = layers[1].getSubLayer(0);
 
-  // Store the original SQL and CartoCSS of the layer so that they
-  // can be reverted when all filters are cleared.
   var originalSQL = sublayer.getSQL();
   var originalCartoCSS = sublayer.getCartoCSS();
-
-  // Create a new collection of widgets
   var widgets = new Widgets();
 
-  // Add some widgets to the collection
   addWidget(widgets, {
     title: 'Room type',
     filters: [
@@ -78,27 +66,20 @@ var onVisCreated = function(vis, layers) {
     ]
   });
 
-  // Generate the stats model and load the stats
   var stats = addStats();
   loadStats(stats, widgets);
 
-  // Bind a callback to the event that is triggered when the active
-  // filter of a widget has changed
   widgets.each(function(widget) {
     widget.bind('change:activeFilter', function() {
-
-      console.log('Active filter of a widget has changed');
 
       var sql = generateSQL(originalSQL, widgets);
       var cartoCSS = generateCartoCSS(originalCartoCSS, widgets);
 
-      // Update the sql and the cartoCSS of the sublayer
       sublayer.set({
         sql: sql,
         cartocss: cartoCSS
       });
 
-      // Re-load the stats using the active filters
       loadStats(stats, widgets);
     });
   });
@@ -115,9 +96,8 @@ var loadStats = function(stats, widgets) {
     statsQuery += " WHERE " + filterConditions.join(" AND ");
   }
 
-  console.log("STATS QUERY: ", statsQuery);
+  console.log("Stats query: ", statsQuery);
 
-  // Use the SQL API to retrieve some stats and update the stats model
   cartodb.SQL({ user: 'cartodb15'}).execute(statsQuery, function(data) {
     var row = data.rows[0];
     stats.set({
@@ -161,7 +141,7 @@ var generateCartoCSS = function(originalCartoCSS, widgets) {
                 "}";
   }
 
-  console.log("CARTOCSS: ", cartoCSS);
+  console.log("CartoCSS: ", cartoCSS);
 
   return cartoCSS;
 };
