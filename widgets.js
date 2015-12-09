@@ -1,35 +1,80 @@
+var Widget = Backbone.Model.extend({
 
-var renderWidget = function(widgetData) {
-  var template = document.getElementById('widgetTemplate').innerHTML;
-  var template = _.template(template);
-  var div = document.createElement('div');
-  div.innerHTML = template(widgetData);
-  document.getElementById('widgets').appendChild(div);
-};
+  isFilterActive: function(index) {
+    return this.get('activeFilter') === index;
+  },
 
-var applyFilter = function(widget, filter) {
-  var isFilterActive = filter.dataset.active === "true";
-
-  var filters = widget.querySelectorAll('.js-filter');
-  for (i = 0; i < filters.length; i++) {
-    if (filters[i].dataset.queryCondition) {
-      filters[i].dataset.active = "false";
+  getActiveFilterCondition: function() {
+    debugger;
+    var activeFilter = this.get('activeFilter');
+    if (activeFilter >= 0) {
+      return this.get('filters')[activeFilter].condition;
     }
   }
+});
 
-  if (!isFilterActive && filter.dataset.queryCondition) {
-    filter.dataset.active = "true";
-  }
-};
+var Widgets = Backbone.Collection.extend({
+  model: Widget,
 
-var reloadWidget = function(widget) {
-  var filters = widget.querySelectorAll('.js-filter');
-  for (i = 0; i < filters.length; i++) {
-    var filter = filters[i];
-    if (filter.dataset.active === "true") {
-      filter.classList.add('is-active');
-    } else {
-      filter.classList.remove('is-active');
-    }
+  getActiveFilterConditions: function() {
+    var conditions = [];
+    this.each(function(widget) {
+      conditions.push(widget.getActiveFilterCondition());
+    });
+    return conditions;
   }
+});
+
+var WidgetView = Backbone.View.extend({
+  className: '.js-widget',
+
+  events: {
+    'click .js-filter': 'changeActiveFilter',
+    'click .js-filter-clear': 'clearActiveFilter'
+  },
+
+  initialize: function() {
+    this.model.bind('change:activeFilter', this.render, this);
+  },
+
+  render: function() {
+    var template = document.getElementById('widgetTemplate').innerHTML;
+    var template = _.template(template);
+    this.el.innerHTML = template(this.model.toJSON());
+
+    var filterElements = Array.prototype.slice.call(this.el.querySelectorAll('.js-filter'));
+    filterElements.forEach(function(filterElement, index) {
+      if (this.model.isFilterActive(index)) {
+        filterElement.classList.add('is-active');
+      } else {
+        filterElement.classList.remove('is-active');
+      }
+    }.bind(this));
+
+    return this;
+  },
+
+  changeActiveFilter: function(event) {
+    event.preventDefault();
+
+    var clickedFilter = event.target;
+    var filterElements = Array.prototype.slice.call(this.el.querySelectorAll('.js-filter'));
+    var indexOfFilter = filterElements.indexOf(clickedFilter);
+    this.model.set('activeFilter', indexOfFilter);
+  },
+
+  clearActiveFilter: function(event) {
+    event.preventDefault();
+
+    this.model.set('activeFilter', undefined);
+  }
+});
+
+var addWidget = function(widgets, widgetData) {
+  var widget = new Widget(widgetData);
+  widgets.add(widget);
+  widgetView = new WidgetView({ model: widget });
+  document.getElementById('widgets').appendChild(widgetView.render().el);
+
+  return widget;
 };
