@@ -1,3 +1,22 @@
+/**
+ * Widget model. It have the following attributes:
+ * 
+ * {
+ *   title: 'Widget title',
+ *   filters: [
+ *     {
+ *       title: 'Option 1',
+ *       condition: 'column_name < 1'
+ *     },
+ *     {
+ *       title: 'Option 2',
+ *       condition: 'column_name < 2'
+ *     }
+ *   ],
+ *   activeFilter: 1
+ * }
+ *
+ */
 var Widget = Backbone.Model.extend({
 
   isFilterActive: function(index) {
@@ -12,6 +31,9 @@ var Widget = Backbone.Model.extend({
   }
 });
 
+/**
+ * Collection of widget models
+ */
 var Widgets = Backbone.Collection.extend({
 
   model: Widget,
@@ -28,6 +50,11 @@ var Widgets = Backbone.Collection.extend({
   }
 });
 
+/**
+ * View of each widget. This view is responsible of setting
+ * the activeFilter attribute on the widget model and refreshing
+ * the widget when this happens.
+ */
 var WidgetView = Backbone.View.extend({
 
   events: {
@@ -71,12 +98,19 @@ var WidgetView = Backbone.View.extend({
   }
 });
 
+/**
+ * Creates a new widget model and adds it to the collection
+ * of widgets
+ */
 var addWidget = function(widgets, widgetData) {
   var widget = new Widget(widgetData);
   widgets.add(widget);
   return widget;
 };
 
+/**
+ * Renders all the widgets
+ */
 var renderWidgets = function(widgets) {
   widgets.each(function(widget) {
     var widgetView = new WidgetView({ model: widget });
